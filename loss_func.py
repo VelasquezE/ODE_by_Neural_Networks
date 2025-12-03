@@ -11,7 +11,7 @@ def get_grad(out, args):
 
 def loss_constant(X, model):
     out = model(X)
-    dx_2 = get_grad(out,X)[:,0]**2
+    dx_2 = get_grad(out,X)[0]**2
     return torch.mean(dx_2) + model(torch.tensor([1.0], requires_grad = True))**2
 
 def loss_harmonic(T,model):
@@ -24,7 +24,6 @@ def loss_harmonic(T,model):
     y0 = model(x0)
     dy0 = get_grad(y0,x0)[0]
     init_con = criteria(y0,torch.zeros_like(y0)) + criteria(dy0,torch.ones_like(dy0))
-    print(init_con.shape)
     return difeq + init_con
 
 def loss_harmonic_damped(T,model):
