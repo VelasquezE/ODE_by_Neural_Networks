@@ -22,7 +22,6 @@ x0 = torch.tensor([[1.0]], dtype=torch.float32).to(device)
 v0 = torch.tensor([[0.0]], dtype=torch.float32).to(device)
 
 # Define PINN
-
 n_inputs = 1 # y(t)
 n_outputs = 1
 n_neurons = 20
@@ -31,29 +30,33 @@ n_hidden_layers = 3
 model = PINN(n_inputs, n_neurons, n_hidden_layers, n_outputs).to(device)
 
 # Optimizer
-
 learning_rate = 0.1
 optimizer = optim.Adam(model.parameters(),lr = learning_rate)
+
 # Train the model
 n_epochs = 100
-T = torch.tensor([0.2,0.5,0.7,0.1], requires_grad = True).to(device)
-T = T.unsqueeze(1)
 
-for epoch in range(0,n_epochs):
+collocation_points = torch.tensor([0.2,0.5,0.7,0.1], requires_grad = True).to(device)
+collocation_points = collocation_points.unsqueeze(1)
+
+for epoch in range(0, n_epochs):
     model.train()
     optimizer.zero_grad()
-    loss = lf.loss_harmonic(T,model)
+    loss = lf.loss_harmonic(collocation_points, model)
     loss.backward()
     optimizer.step()
 
 # Predict solution
 model.eval()
+
 with torch.no_grad():
-    yy = model(t_torch)
-zz = torch.sin(t_torch)
+    prediction = model(t_torch)
+
+analytical_sol = torch.sin(t_torch)
+
 # Visualize results and compare with analytical solution
-plt.plot(np.linspace(0, 1, 500),yy.detach().numpy(), label = 'simulation')
-plt.plot(np.linspace(0, 1, 500),zz, label = 'analitic')
+plt.plot(t, prediction.detach().numpy(), label = 'PINN solution')
+plt.plot(t, analytical_sol, label = 'Analytic')
 plt.legend()
 plt.show()
 
