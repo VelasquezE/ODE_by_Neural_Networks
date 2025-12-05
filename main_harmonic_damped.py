@@ -9,7 +9,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 
 # Generate collocation points 
-t = np.linspace(0, 1, 1000).astype(np.float32) + np.random.uniform(-1/500,1/500,1000)
+N = 1000
+t = np.linspace(0, 10, N).astype(np.float32) + np.random.uniform(-1/N,1/N,N)
 t = list(t)
 collocation_points = torch.tensor(t, dtype = torch.float32, requires_grad=True).to(device)
 collocation_points = collocation_points.unsqueeze(1)
@@ -28,26 +29,27 @@ optimizer = optim.Adam(model.parameters(),lr = learning_rate)
 
 # Train the model
 N_EPOCHS = [1000,2000,10000]
+eval_points = torch.linspace(0,10,300).unsqueeze(1)
 
 for n_epochs in N_EPOCHS:
     for epoch in range(0, n_epochs):
         model.train()
         optimizer.zero_grad()
-        loss = lf.loss_harmonic(collocation_points, model,1,1)
+        loss = lf.loss_harmonic_damped(collocation_points, model,[1,1,1])
         loss.backward()
         optimizer.step()
 
     # Predict solution
     model.eval()
-
+    
     with torch.no_grad():
-        prediction = model(collocation_points)
+        prediction = model(eval_points)
     
     # Visualize results and compare with analytical solution
-    plt.plot(t, prediction.detach().numpy(), label = f'PINN solution{n_epochs}')
+    plt.plot(eval_points, prediction.detach().numpy(), label = f'PINN solution{n_epochs}')
 
-analytical_sol = torch.sin(collocation_points)
-plt.plot(t, analytical_sol.detach().numpy(), label = 'Analytic')
+#analytical_sol = torch.sin(collocation_points)
+#plt.plot(t, analytical_sol.detach().numpy(), label = 'Analytic')
 plt.legend()
 plt.show()
 
