@@ -29,21 +29,22 @@ def loss_constant(X, model):
     dx_2 = get_grad(out,X)[0]**2
     return torch.mean(dx_2) + model(torch.tensor([1.0], requires_grad = True))**2
 
-def loss_harmonic(T,model):
-    w = 1
+def loss_harmonic(T,model,w,m):
     x = model(T)
     dx_dt2 = get_grad(get_grad(x,T)[0],T)[0]
     diff_equation = criteria(dx_dt2,- w * x)
-    
+    grad_difeq = get_grad(diff_equation, T)[0]
+
     x0 = torch.tensor([0.0], requires_grad = True)
     y0 = model(x0)
     dy0 = get_grad(y0,x0)[0]
-    inititial_conditions = criteria(y0,torch.zeros_like(y0)) + criteria(dy0,torch.ones_like(dy0))
-    return diff_equation + inititial_conditions
 
-def loss_harmonic_damped(T,model):
+    inititial_conditions = criteria(y0,torch.zeros_like(y0)) + criteria(dy0,torch.ones_like(dy0))
+    return diff_equation + inititial_conditions #+ torch.max(grad_difeq**2) 
+
+def loss_harmonic_damped(T,model,params):
     #parameters
-    m,b,k=[1,1,1]
+    m,b,k,=params
     
     #differential eq
     x = model(T)
