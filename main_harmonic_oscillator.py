@@ -33,7 +33,7 @@ optimizer = optim.Adam(model.parameters(),lr = learning_rate)
 
 # Train the model
 N_EPOCHS = [1000,2000,10000]
-parameters = {"w": 8.0, "x0": 1.0, "v0": 1.0}
+parameters = {"w": 1.0, "x0": 1.0, "v0": 1.0}
 
 for n_epochs in N_EPOCHS:
     for epoch in range(0, n_epochs):
