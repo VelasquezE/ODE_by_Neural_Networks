@@ -4,6 +4,11 @@ import torch.optim as optim
 import loss_func as lf
 from pinn_model import PINN
 import matplotlib.pyplot as plt
+from scipy.integrate import solve_ivp
+import os
+
+results_folder = "results"
+os.makedirs(results_folder, exist_ok = "True")
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
@@ -28,12 +33,13 @@ optimizer = optim.Adam(model.parameters(),lr = learning_rate)
 
 # Train the model
 N_EPOCHS = [1000,2000,10000]
+parameters = {"w": 8.0, "x0": 1.0, "v0": 1.0}
 
 for n_epochs in N_EPOCHS:
     for epoch in range(0, n_epochs):
         model.train()
         optimizer.zero_grad()
-        loss = lf.loss_harmonic(collocation_points, model,1,1)
+        loss = lf.give_loss_harmonic_oscillator(collocation_points, model, parameters)
         loss.backward()
         optimizer.step()
 
@@ -46,7 +52,10 @@ for n_epochs in N_EPOCHS:
     # Visualize results and compare with analytical solution
     plt.plot(t, prediction.detach().numpy(), label = f'PINN solution{n_epochs}')
 
-analytical_sol = torch.sin(collocation_points)
+analytical_sol = parameters["x0"] * torch.cos(parameters["w"] * collocation_points) + (
+                parameters["v0"] / parameters["w"]) * torch.sin(parameters["w"]
+                * collocation_points)
+
 plt.plot(t, analytical_sol.detach().numpy(), label = 'Analytic')
 plt.legend()
 plt.show()
