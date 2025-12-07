@@ -35,7 +35,7 @@ for n_epochs in N_EPOCHS:
     for epoch in range(0, n_epochs):
         model.train()
         optimizer.zero_grad()
-        loss = lf.loss_harmonic_damped(collocation_points, model,[1,1,1])
+        loss = lf.loss_harmonic_damped(collocation_points, model,[1, 1, 2])
         loss.backward()
         optimizer.step()
 
