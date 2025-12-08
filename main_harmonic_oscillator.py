@@ -23,19 +23,18 @@ collocation_points = collocation_points.unsqueeze(1)
 n_inputs = 1 # y(t)
 n_outputs = 1
 n_neurons = 20
-n_hidden_layers = 1
-
-model = PINN(n_inputs, n_neurons, n_hidden_layers, n_outputs).to(device)
+n_hidden_layers = 4
 
 # Optimizer
-learning_rate = 0.1
-optimizer = optim.Adam(model.parameters(),lr = learning_rate)
+learning_rate = 0.001
 
 # Train the model
 N_EPOCHS = [1000,2000,10000]
 parameters = {"w": 1.0, "x0": 1.0, "v0": 1.0}
 
 for n_epochs in N_EPOCHS:
+    model = PINN(n_inputs, n_neurons, n_hidden_layers, n_outputs).to(device)
+    optimizer = optim.Adam(model.parameters(),lr = learning_rate)
     for epoch in range(0, n_epochs):
         model.train()
         optimizer.zero_grad()
@@ -59,4 +58,5 @@ analytical_sol = parameters["x0"] * torch.cos(parameters["w"] * collocation_poin
 plt.plot(t, analytical_sol.detach().numpy(), label = 'Analytic')
 plt.legend()
 plt.show()
+
 
